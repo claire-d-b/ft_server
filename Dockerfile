@@ -9,5 +9,5 @@ COPY php.ini /etc/php/7.3/fpm/php.ini
 ## doute sur démarrage de phpfpm
 ##RUN cd /var/www/html/ && wget http://repo.mysql.com/mysql-apt-config_0.8.13-1_all.deb
 ##RUN DEBIAN_FRONTEND=noninteractive dpkg -i mysql-apt-config_0.8.13-1_all.deb
-RUN apt-get -y update && cd /var/www/html/ && apt-get -y install default-mysql-server
+RUN cd /var/www/html/ && apt-get -y update && apt-get -y install gnupg lsb-release && wget https://dev.mysql.com/get/mysql-apt-config_0.8.15-1_all.deb && dpkg -i mysql-apt-config_0.8.15-1_all.deb && apt-get update && apt-get -y install /var/www/html/mysql-apt-config_0.8.15-1_all.deb
 ENTRYPOINT ["nginx", "-g", "daemon off;"]
