@@ -1,9 +1,11 @@
 FROM debian:buster
 
+ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get -y update && apt-get -y upgrade && apt-get -y install apt-utils && apt-get -y dist-upgrade && apt-get -y install nginx php php-fpm wget
-RUN apt-get -y install php7.3-mysql
-RUN apt-get -y install default-mysql-server 
+RUN apt-get -y update && apt-get upgrade -y && apt-get dist-upgrade -y && apt-get install -y nginx php php-fpm wget
+RUN apt-get install -y php7.3-mysql
+RUN apt-get -y install apt-utils
+
 
 RUN unlink /etc/nginx/sites-enabled/default && mv /etc/nginx/sites-available/default /etc/nginx/sites-available/default_old
 COPY default_nginx /etc/nginx/sites-available/default
@@ -18,16 +20,24 @@ COPY config_php var/www/html/phpmyadmin/config.inc.php
 RUN rm /etc/php/7.3/fpm/php.ini
 COPY php.ini /etc/php/7.3/fpm/php.ini
 
-##RUN cd /var/www/html/ && wget https://wordpress.org/latest.tar.gz && tar -xzvf latest.tar.gz && touch .htaccess && chmod 660 .htaccess
-##RUN cd /var/www/html/wordpress/ && rm wp-config-sample.php
-##COPY wp-config.php /var/www/html/wordpress/
-##RUN cp -a /var/www/html/wordpress/. /var/www/html && cd /var/www/html && rm -rf wordpress
-##RUN cd /var/www/html/ && mkdir wp-content/upgrade
-##RUN cd /var/www/html/ && chown -R root:www-data /var/www/html && find /var/www/html -type d -exec chmod g+s {} \;
-##&& chmod g+w /var/www/html/wp-content && chmod -R g+w /var/www/html/wp-content/themes && chmod -R g+w /var/www/html/wp-content/plugins
-##RUN cd /var/www/html/ && wget https://api.wordpress.org/secret-key/1.1/salt/
-##RUN cd /var/www/html/ && rm index.html
-##COPY index.html /var/www/html/
+RUN cd /bin/ && apt-get -y install gnupg lsb-release && wget https://dev.mysql.com/get/mysql-apt-config_0.8.15-1_all.deb && dpkg -i  mysql-apt-config_0.8.15-1_all.deb && apt-get -y update && apt-get -y install mysql-server && mysqld_safe --basedir=/var/lib/
+
+#CMD tail -f /dev/null
+
+RUN cd /var/www/html/ && wget https://wordpress.org/latest.tar.gz && tar -xzvf latest.tar.gz && touch .htaccess && chmod 660 .htaccess
+RUN cd /var/www/html/wordpress/ && rm wp-config-sample.php
+COPY wp-config.php /var/www/html/wordpress/
+RUN cp -a /var/www/html/wordpress/. /var/www/html && cd /var/www/html && rm -rf wordpress
+RUN cd /var/www/html/ && mkdir wp-content/upgrade
+RUN cd /var/www/html/ && chown -R root:www-data /var/www/html && find /var/www/html -type d -exec chmod g+s {} \; \
+&& chmod g+w /var/www/html/wp-content && chmod -R g+w /var/www/html/wp-content/themes && chmod -R g+w /var/www/html/wp-content/plugins
+RUN cd /var/www/html/ && wget https://api.wordpress.org/secret-key/1.1/salt/
+RUN cd /var/www/html/ && rm index.html
+COPY index.html /var/www/html/
+
+RUN mysqld_safe --basedir=/var/lib/ echo "CREATE DATABASE wordpress DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;" | mysqld_safe --user root \
+&& echo "GRANT ALL ON wordpress.* TO 'root'@'localhost' IDENTIFIED BY '';" | mysqld_safe --user root \
+&& echo "FLUSH PRIVILEGES;" | mysqld_safe --user root
 
 COPY docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
 RUN chmod +x /usr/bin/docker-entrypoint.sh
