@@ -6,7 +6,6 @@ RUN apt-get -y update && apt-get upgrade -y && apt-get dist-upgrade -y && apt-ge
 RUN apt-get install -y php7.3-mysql
 RUN apt-get -y install apt-utils
 
-
 RUN unlink /etc/nginx/sites-enabled/default && mv /etc/nginx/sites-available/default /etc/nginx/sites-available/default_old
 COPY default_nginx /etc/nginx/sites-available/default
 RUN rm -rf /etc/nginx/sites-enabled/default && ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
@@ -20,9 +19,24 @@ COPY config_php var/www/html/phpmyadmin/config.inc.php
 RUN rm /etc/php/7.3/fpm/php.ini
 COPY php.ini /etc/php/7.3/fpm/php.ini
 
-RUN cd /bin/ && apt-get -y install gnupg lsb-release && wget https://dev.mysql.com/get/mysql-apt-config_0.8.15-1_all.deb && dpkg -i  mysql-apt-config_0.8.15-1_all.deb && apt-get -y update && apt-get -y install mysql-server && mysqld_safe --basedir=/var/lib/
-
-#CMD tail -f /dev/null
+RUN apt-get -y update && apt-get -y install libsasl2-2 libaio1 libmecab2 libnuma1 perl && cd /var/lib/ && wget https://repo.mysql.com/apt/debian/pool/mysql-8.0/m/mysql-community/mysql-common_8.0.22-1debian10_amd64.deb && \
+dpkg -i mysql-common_8.0.22-1debian10_amd64.deb && \ 
+wget https://repo.mysql.com/apt/debian/pool/mysql-8.0/m/mysql-community/mysql-community-client-plugins_8.0.22-1debian10_amd64.deb && dpkg -i \
+mysql-community-client-plugins_8.0.22-1debian10_amd64.deb && \
+wget https://repo.mysql.com/apt/debian/pool/mysql-8.0/m/mysql-community/libmysqlclient21_8.0.22-1debian10_amd64.deb && dpkg -i libmysqlclient21_8.0.22-1debian10_amd64.deb && \ 
+wget https://repo.mysql.com/apt/debian/pool/mysql-8.0/m/mysql-community/libmysqlclient-dev_8.0.22-1debian10_amd64.deb \
+&& dpkg -i libmysqlclient-dev_8.0.22-1debian10_amd64.deb && \
+wget https://repo.mysql.com/apt/debian/pool/mysql-8.0/m/mysql-community/mysql-community-client-core_8.0.22-1debian10_amd64.deb && \
+dpkg -i mysql-community-client-core_8.0.22-1debian10_amd64.deb && \
+wget https://repo.mysql.com/apt/debian/pool/mysql-8.0/m/mysql-community/mysql-community-client_8.0.22-1debian10_amd64.deb && \
+dpkg -i mysql-community-client_8.0.22-1debian10_amd64.deb && \
+wget https://repo.mysql.com/apt/debian/pool/mysql-8.0/m/mysql-community/mysql-client_8.0.22-1debian10_amd64.deb \
+&& dpkg -i mysql-client_8.0.22-1debian10_amd64.deb && wget https://repo.mysql.com/apt/debian/pool/mysql-8.0/m/mysql-community/mysql-community-server-core_8.0.22-1debian10_amd64.deb \
+&& dpkg -i mysql-community-server-core_8.0.22-1debian10_amd64.deb && \
+wget https://repo.mysql.com/apt/debian/pool/mysql-8.0/m/mysql-community/mysql-community-server_8.0.22-1debian10_amd64.deb && \
+dpkg -i mysql-community-server_8.0.22-1debian10_amd64.deb && wget https://repo.mysql.com/apt/debian/pool/mysql-8.0/m/mysql-community/mysql-server_8.0.22-1debian10_amd64.deb && \
+dpkg -i mysql-server_8.0.22-1debian10_amd64.deb 
+RUN apt-get -y update && apt-get -y install mysql-server 
 
 RUN cd /var/www/html/ && wget https://wordpress.org/latest.tar.gz && tar -xzvf latest.tar.gz && touch .htaccess && chmod 660 .htaccess
 RUN cd /var/www/html/wordpress/ && rm wp-config-sample.php
@@ -35,28 +49,6 @@ RUN cd /var/www/html/ && wget https://api.wordpress.org/secret-key/1.1/salt/
 RUN cd /var/www/html/ && rm index.html
 COPY index.html /var/www/html/
 
-RUN mysqld_safe --basedir=/var/lib/ echo "CREATE DATABASE wordpress DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;" | mysqld_safe --user root \
-&& echo "GRANT ALL ON wordpress.* TO 'root'@'localhost' IDENTIFIED BY '';" | mysqld_safe --user root \
-&& echo "FLUSH PRIVILEGES;" | mysqld_safe --user root
-
 COPY docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
 RUN chmod +x /usr/bin/docker-entrypoint.sh
 ENTRYPOINT bash docker-entrypoint.sh
-
-##RUN apt-get -y install php7.3-mysql
-## doute sur démarrage de phpfpm
-##RUN cd /var/www/html/ && wget http://repo.mysql.com/mysql-apt-config_0.8.13-1_all.deb
-##RUN DEBIAN_FRONTEND=noninteractive dpkg -i mysql-apt-config_0.8.13-1_all.deb
-##RUN touch /var/run/mysqld/mysqld.sock && ln -s /var/run/mysqld/mysqld.sock /tmp/mysqld.sock && chmod 0755 /var/run/mysqld && chown mysql:root /var/run/mysqld
-##RUN rm /etc/mysql/my.cnf
-##COPY my.cnf /etc/mysql/my.cnf
-##RUN mysql_secure_installation --user=root --host=localhost --port=3306
-##RUN cd /var/www/html/ && apt-get -y update && apt-get -y install gnupg && apt -y update && apt -y install default-mysql-server
-##RUN cd /var/run/mysqld && touch mysqld.sock && chmod +x mysqld.sock
-##RUN service mysqld start
-##RUN mysql /run/mysqld -h localhost -u root --skip-password
-##RUN service mysqladmin start
-##RUN cd /var/run/mysqld && touch mysqld.sock && chmod +x mysqld.sock && chown mysql:mysql -R * && cd /tmp && ln -s /var/run/mysqld/mysqld.sock mysqld.sock
-##RUN echo "CREATE DATABASE wordpress DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;" | mysqladmin -u root --bind-address=localhost status
-##RUN echo "GRANT ALL ON wordpress.* TO 'root'@'localhost' IDENTIFIED BY '';" | mysqladmin -u root --bind-address=localhost status
-##RUN echo "FLUSH PRIVILEGES;" | mysqladmin -u --bind-address=localhost status
