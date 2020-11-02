@@ -47,7 +47,7 @@ RUN cd /var/www/html/ && chown -R root:www-data /var/www/html && find /var/www/h
 && chmod g+w /var/www/html/wp-content && chmod -R g+w /var/www/html/wp-content/themes && chmod -R g+w /var/www/html/wp-content/plugins
 RUN cd /var/www/html/ && wget https://api.wordpress.org/secret-key/1.1/salt/
 RUN cd /var/www/html/ && rm index.html
-COPY index.html /var/www/html/
+#COPY index.html /var/www/html/
 
 COPY docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
 RUN chmod +x /usr/bin/docker-entrypoint.sh
