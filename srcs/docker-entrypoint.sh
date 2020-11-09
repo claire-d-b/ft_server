@@ -11,6 +11,13 @@ echo "USE wordpress;" | mysql --port=13306 --host=localhost --user=root
 echo "GRANT ALL PRIVILEGES ON wordpress.* TO 'root'@'localhost' WITH GRANT OPTION;" | mysql --port=13306 --host=localhost --user=root
 echo "update mysql.user set plugin='mysql_native_password' where user='root';" | mysql --port=13306 --host=localhost --user=root
 echo "FLUSH PRIVILEGES;" | mysql --port=13306 --host=localhost --user=root
+if [ "$AUTOINDEX" = "on" ] ;
+then mv srcs/default_nginx_ai_on /etc/nginx/sites-available/default ;
+else mv srcs/default_nginx_ai_off /etc/nginx/sites-available/default ;
+fi
+rm -rf /etc/nginx/sites-enabled/default
+ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default ;
+service nginx reload
 service nginx start
 # -g sets global directives
 # a daemon is a computer program that runs as a background process, rather than being under the direct control of an interactive user.

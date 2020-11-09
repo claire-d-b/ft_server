@@ -1,6 +1,7 @@
 FROM debian:buster
 
 ENV DEBIAN_FRONTEND=noninteractive
+ENV AUTOINDEX=on
 
 # installation of last available packages :
 # - free software of web werver nginx
@@ -8,6 +9,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 # php-fpm - communication intervace between php and the server
 # mysql - database service to deploy native cloud applications using db
 
+# RUN echo "$AUTOINDEX"
+# RUN if [ "$AUTOINDEX" = "on" ] ; then echo "yeaaaaaaaaay" ; else echo "nooooope" ; fi
 RUN apt-get -y update && apt-get upgrade -y && apt-get dist-upgrade -y && apt-get install -y nginx php php-fpm wget
 RUN apt-get install -y php7.3-mysql
 
@@ -21,7 +24,10 @@ RUN apt-get install -y php7.3-mysql
 # .ht files - These files store your connection and terminal emulator settings as well as any Key Macros or file transfer settings you have set up.
 
 RUN unlink /etc/nginx/sites-enabled/default && mv /etc/nginx/sites-available/default /etc/nginx/sites-available/default_old
-COPY srcs/default_nginx /etc/nginx/sites-available/default
+RUN mkdir srcs
+COPY srcs/default_nginx_ai_on /srcs/default_nginx_ai_on
+COPY srcs/default_nginx_ai_off /srcs/default_nginx_ai_off
+COPY srcs/default_nginx_ai_on /etc/nginx/sites-available/default
 RUN rm -rf /etc/nginx/sites-enabled/default && ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
 RUN cd /etc/nginx/ && mkdir ssl
 RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/nginx/ssl/nginx.key -out \
