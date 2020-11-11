@@ -11,6 +11,7 @@ echo "USE wordpress;" | mysql --port=13306 --host=localhost --user=root
 echo "GRANT ALL PRIVILEGES ON wordpress.* TO 'root'@'localhost' WITH GRANT OPTION;" | mysql --port=13306 --host=localhost --user=root
 echo "update mysql.user set plugin='mysql_native_password' where user='root';" | mysql --port=13306 --host=localhost --user=root
 echo "FLUSH PRIVILEGES;" | mysql --port=13306 --host=localhost --user=root
+# Changing nginx conf file according to env variable autoindex on / off
 if [ "$AUTOINDEX" = "on" ] ;
 then mv srcs/default_nginx_ai_on /etc/nginx/sites-available/default ;
 else mv srcs/default_nginx_ai_off /etc/nginx/sites-available/default ;
